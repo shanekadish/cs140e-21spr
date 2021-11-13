@@ -80,13 +80,14 @@ void gpio_write(unsigned int pin, unsigned int v) {
 
 // set <pin> to input.
 void gpio_set_input(unsigned int pin) {
-    // implement.
+    uint32_t fsel_paddr = get_gpio_fsel_paddr(pin);
+    uint32_t old_value = GET32(fsel_paddr);
+    uint32_t bits_to_clear = 0b111 << ((pin % 10) * 3);
+    uint32_t new_value = old_value & ~bits_to_clear;
+    PUT32(fsel_paddr, new_value);
 }
 
 // return the value of <pin>
 int gpio_read(unsigned int pin) {
-    unsigned int v = 0;
-
-    // implement.
-    return v;
+    return (GET32(gpio_lev0) & (1 << pin)) >> pin;
 }
