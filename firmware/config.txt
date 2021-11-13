@@ -8,4 +8,4 @@ kernel_address=0x8000
 
 # on the pi zero w you need this line or it won't work.
 # zhouheng sun found this!
-# enable_uart=1 
+enable_uart=1
