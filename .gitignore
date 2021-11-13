@@ -4,5 +4,7 @@
 *-staff
 *.swp
 *.swo
+*.out
+*.bin
 staff-*.txt
 .gdb_history
