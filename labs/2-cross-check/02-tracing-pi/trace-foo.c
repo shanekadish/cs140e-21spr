@@ -15,15 +15,15 @@ unsigned __wrap_foo(unsigned arg0, unsigned arg1) {
     arg0++;
     arg1++;
     printk("calling real foo(%u,%u)\n", arg0,arg1);
-    unsigned ret = __real_foo(arg0,arg1);
+    unsigned ret = foo(arg0,arg1);
     printk("returning from wrap_foo\n");
     return ret;
 }
 
 void notmain(void) {
     unsigned a0 = 1, a1 = 2;
-    printk("about to call foo(%d,%d)\n", a0,a1);
-    unsigned ret = foo(a0,a1);
+    printk("about to call __wrap_foo(%d,%d)\n", a0,a1);
+    unsigned ret = __wrap_foo(a0,a1);
     printk("returned  %u\n", ret);
     clean_reboot();
 }

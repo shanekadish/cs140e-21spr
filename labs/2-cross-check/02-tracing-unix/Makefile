@@ -4,7 +4,7 @@
 
 NAME = trace-foo
 # this is passed to ld
-TRACE_FLAGS = --wrap=foo
+# TRACE_FLAGS = --wrap=foo
 OBJS    := $(NAME).o foo.o
 
 CC = gcc
@@ -17,7 +17,7 @@ $(OBJS): $(DEPS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(NAME): $(OBJS)
-	$(CC) -Wl,$(TRACE_FLAGS) $(OBJS) -o $@ 
+	$(CC) $(OBJS) -o $@
 
 clean:
 	rm -rf $(NAME) *~ *.o Makefile.bak  

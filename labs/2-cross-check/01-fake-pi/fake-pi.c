@@ -86,7 +86,7 @@ void put32(volatile void *addr, uint32_t v) {
 
 // same, but takes <addr> as a uint32_t
 void PUT32(uint32_t addr, uint32_t v) {
-    output("PUT32(%x) = %x\n", addr, v);
+    output("PUT32(0x%08x) = 0x%08x\n", addr, v);
     switch(addr) {
     case gpio_fsel0: gpio_fsel0_v = v;  break;
     case gpio_fsel1: gpio_fsel1_v = v;  break;
@@ -94,7 +94,7 @@ void PUT32(uint32_t addr, uint32_t v) {
     case gpio_set0:  gpio_set0_v  = v;  break;
     case gpio_clr0:  gpio_clr0_v  = v;  break;
     case gpio_lev0:  panic("illegal write to gpio_lev0!\n");
-    default: panic("write to illegal address: %x\n", addr);
+    default: panic("write to illegal address: 0x%08x\n", addr);
     }
 }
 
@@ -119,9 +119,9 @@ uint32_t GET32(uint32_t addr) {
     // the raw hardware, correlating with other pins or 
     // time or ...
     case gpio_lev0:  v = random();  break;
-    default: panic("read of illegal address: %x\n", addr);
+    default: panic("read of illegal address: 0x%08x\n", addr);
     }
-    output("GET32(%x) = %x\n", addr,v);
+    output("GET32(0x%08x) = 0x%08x\n", addr,v);
     return v;
 }
 
