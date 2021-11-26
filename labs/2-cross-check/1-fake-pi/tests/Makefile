@@ -6,13 +6,13 @@ MAKEFLAGS += --no-print-directory
 
 # define the tests you want to compile here.  this would 
 # be the whole set:
-#TEST_SRC := $(wildcard ./[01]-*.c)                      \
-#            $(wildcard ./[34]-unix-*.c)                 \
-# $(CS140E_2021_PATH)/labs/1-gpio/code.staff/1-blink.c   \
-# $(CS140E_2021_PATH)/labs/1-gpio/code.staff/2-blink.c 
+TEST_SRC := $(wildcard ./[01]-*.c)                      \
+            $(wildcard ./[34]-unix-*.c)                 \
+ $(CS140E_2021_PATH)/labs/1-gpio/code.staff/1-blink.c   \
+ $(CS140E_2021_PATH)/labs/1-gpio/code.staff/2-blink.c
 
 # do the first easy set
-TEST_SRC := $(wildcard ./0-*.c) 
+# TEST_SRC := $(wildcard ./0-*.c)
 
 # make them local to this directory
 TESTS := $(patsubst %.c, %, $(TEST_SRC))
