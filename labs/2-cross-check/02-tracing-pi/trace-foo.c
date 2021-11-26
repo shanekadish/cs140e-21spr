@@ -15,7 +15,7 @@ unsigned __wrap_foo(unsigned arg0, unsigned arg1) {
     arg0++;
     arg1++;
     printk("calling real foo(%u,%u)\n", arg0,arg1);
-    unsigned ret = foo(arg0,arg1);
+    unsigned ret = __real_foo(arg0,arg1);
     printk("returning from wrap_foo\n");
     return ret;
 }
