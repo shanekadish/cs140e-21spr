@@ -65,8 +65,10 @@ void __wrap_PUT32(unsigned addr, unsigned val) {
     // implement this function!
     __real_PUT32(addr, val);
     int old_state = state;
-    if (state == TRACE_ON) trace_stop();
-    printk("TRACE:GET32(0x%x)=0x%x\n", addr, val);
+    if (state == TRACE_ON) {
+        trace_stop();
+        printk("TRACE:GET32(0x%x)=0x%x\n", addr, val);
+    }
     state = old_state;
 }
 
@@ -76,8 +78,10 @@ unsigned __wrap_GET32(unsigned addr) {
     // implement this function!
     v = __real_GET32(addr);
     int old_state = state;
-    if (state == TRACE_ON) trace_stop();
-    printk("TRACE:GET32(0x%x)=0x%x\n", addr, v);
+    if (state == TRACE_ON) {
+        trace_stop();
+        printk("TRACE:GET32(0x%x)=0x%x\n", addr, v);
+    } 
     state = old_state;
     return v;
 }
