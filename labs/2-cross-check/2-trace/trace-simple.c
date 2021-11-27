@@ -54,34 +54,29 @@ void trace_stop(void) {
 
 // call these to emit so everyone can compare!
 static void emit_put32(uint32_t addr, uint32_t val) {
-    printk("TRACE:PUT32(0x%x)=0x%x\n", addr, val);
+    printk("TRACE:PUT32(%x)=%x\n", addr, val);
 }
 static void emit_get32(uint32_t addr, uint32_t val) {
-    printk("TRACE:GET32(0x%x)=0x%x\n", addr, val);
+    printk("TRACE:GET32(%x)=%x\n", addr, val);
 }
 
 // the linker will change all calls to GET32 to call __wrap_GET32
 void __wrap_PUT32(unsigned addr, unsigned val) {
-    // implement this function!
     __real_PUT32(addr, val);
-    int old_state = state;
     if (state == TRACE_ON) {
         trace_stop();
-        printk("TRACE:GET32(0x%x)=0x%x\n", addr, val);
+        emit_put32(addr, val);
+        trace_start(0);
     }
-    state = old_state;
 }
 
 // the linker will change all calls to GET32 to call __wrap_GET32
 unsigned __wrap_GET32(unsigned addr) {
-    unsigned v = 0;
-    // implement this function!
-    v = __real_GET32(addr);
-    int old_state = state;
+    uint32_t val = __real_GET32(addr);
     if (state == TRACE_ON) {
         trace_stop();
-        printk("TRACE:GET32(0x%x)=0x%x\n", addr, v);
+        emit_get32(addr, val);
+        trace_start(0);
     } 
-    state = old_state;
-    return v;
+    return val;
 }
