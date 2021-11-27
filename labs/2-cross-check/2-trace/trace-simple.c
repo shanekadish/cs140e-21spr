@@ -52,12 +52,32 @@ void trace_stop(void) {
     // we would print things out if output was being buffered.
 }
 
+// Note that `printk` does not support the full range of format specifiers
+
 // call these to emit so everyone can compare!
 static void emit_put32(uint32_t addr, uint32_t val) {
     printk("TRACE:PUT32(%x)=%x\n", addr, val);
 }
 static void emit_get32(uint32_t addr, uint32_t val) {
     printk("TRACE:GET32(%x)=%x\n", addr, val);
+}
+
+static void set_bin_string(uint32_t val, char *buf) {
+    for (int i = 31; i >= 0; i--) {
+        if (val & (1U << i)) buf[i] = '1';
+        else buf[i] = '0';
+    }
+}
+
+static void verbose_emit_put32(uint32_t addr, uint32_t val) {
+    char bin_string[32] = {0};
+    set_bin_string(val, bin_string);
+    printk("TRACE:PUT32(%08x)=%08x\t0b%s\n", addr, val, bin_string);
+}
+static void verbose_emit_get32(uint32_t addr, uint32_t val) {
+    char bin_string[32] = {0};
+    set_bin_string(val, bin_string);
+    printk("TRACE:GET32(%08x)=%08x\t0b%s\n", addr, val, bin_string);
 }
 
 // the linker will change all calls to GET32 to call __wrap_GET32

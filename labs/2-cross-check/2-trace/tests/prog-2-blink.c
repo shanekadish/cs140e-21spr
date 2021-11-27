@@ -2,6 +2,14 @@
 #include "rpi.h"
 #include "trace.h"
 
+void nop(void);
+
+// countdown 'ticks' cycles
+static inline void delay(unsigned ticks) {
+    while(ticks-- > 0)
+        nop();
+}
+
 void notmain(void) {
     enum { led1 = 20, led2 = 21 };
 
