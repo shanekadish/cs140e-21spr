@@ -9,3 +9,13 @@
 staff-*.txt
 .gdb_history
 *shane-notes.md
+*.o
+*.a
+*.list
+*.elf
+*tests*
+*objs*
+*blink
+*input
+*foo
+*.DS_STORE
