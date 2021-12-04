@@ -13,9 +13,11 @@ staff-*.txt
 *.a
 *.list
 *.elf
+*.img
 *tests*
 *objs*
 *blink
 *input
 *foo
 *.DS_STORE
+*my-install
