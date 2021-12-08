@@ -75,8 +75,12 @@ static void boot_putk(const char *msg) {
 //     can overflow.
 static unsigned 
 has_data_timeout(unsigned timeout) {
-    // implement this!
-    return 0;
+    unsigned start = timer_get_usec();
+    while (!boot_has_data()) {
+        unsigned current = timer_get_usec();
+        if (current - start >= timeout) return 0;
+    }
+    return 1;
 }
 
 // send a <GET_PROG_INFO> message every 300ms.
