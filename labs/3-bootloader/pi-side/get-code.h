@@ -96,17 +96,25 @@ static void wait_for_data(unsigned usec_timeout) {
 static inline long get_code(void) {
     // 1. keep sending GET_PROG_INFO every 300ms until 
     // there is data.
+    boot_putk("shane-boot: Sending GET_PROG_INFO to unix...\n");
     wait_for_data(300 * 1000);
 
     /****************************************************************
      * Add your code below: 2,3,4,5,6
      */
     long addr = 0;
-
+    uint32_t op = 0;
+    uint32_t crc = 0;
+    unsigned nbytes = 0;
 
     // 2. expect: [PUT_PROG_INFO, addr, nbytes, cksum] 
     //    we echo cksum back in step 4 to help debugging.
+    op     = boot_get32();
+    addr   = boot_get32();
+    nbytes = boot_get32();
+    crc    = boot_get32();
 
+    boot_putk("shane-boot: Received PUT_PROG_INFO, ARMBASE, nbytes, crc unix\n");
 
     // 3. If the binary will collide with us, abort. 
     //    you can assume that code must be below where the booloader code
@@ -125,7 +133,7 @@ static inline long get_code(void) {
     // 6. verify the cksum of the copied code.
 
     // 7. send back a BOOT_SUCCESS!
-    boot_putk("<YOUR NAME HERE>: success: Received the program!\n");
+    boot_putk("shane-boot: success: Received the program!\n");
     boot_put32(BOOT_SUCCESS);
 
     return addr;
