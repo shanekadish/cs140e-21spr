@@ -1,9 +1,12 @@
 #include <stdio.h>
 #include <assert.h>
+#include <dirent.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
 
 void *read_file(unsigned *size, const char *name) {
     assert(name != NULL);
@@ -27,11 +30,29 @@ void *read_file(unsigned *size, const char *name) {
     return buf;
 }
 
+static const char *ttyusb_prefixes[] = {
+	"ttyUSB",	// linux
+	"cu.usbserial", // mac os
+    // if your system uses another name, add it.
+	0
+};
+
+static int filter(const struct dirent *d) {
+    const char *prefix;
+    for (int i = 0; (prefix = ttyusb_prefixes[i]); i++)
+        if (!strncmp(d->d_name, prefix, strlen(prefix))) return 1;
+    return 0;
+}
+
+char *find_ttyusb(void) {
+    struct dirent **dirents;
+    int nfiles = scandir("/dev", &dirents, filter, alphasort);
+    if (nfiles == -1) perror("find_ttyusb: scandir failed");
+    if (nfiles == 0 || nfiles > 1) fprintf(stderr, "Found dodgy number of dirent matches: %d\n", nfiles);
+    return dirents[0]->d_name;
+}
 
 int main(void) {
-    unsigned size;
-    char *buf = read_file(&size, "test.txt");
-    for (int i = 0; buf[i]; i++)
-        printf("%c", buf[i]);
+    printf("%s\n", find_ttyusb());
     return 0;
 }

@@ -7,17 +7,18 @@
 
 #define _SVID_SOURCE
 #include <dirent.h>
-// static const char *ttyusb_prefixes[] = {
-// 	"ttyUSB",	// linux
-// 	"cu.SLAB_USB", // mac os
-//     // if your system uses another name, add it.
-// 	0
-// };
+static const char *ttyusb_prefixes[] = {
+	"ttyUSB",	// linux
+	"cu.usbserial", // mac os
+    // if your system uses another name, add it.
+	0
+};
 
 static int filter(const struct dirent *d) {
-    // scan through the prefixes, returning 1 when you find a match.
-    // 0 if there is no match.
-    unimplemented();
+    const char *prefix;
+    for (int i = 0; (prefix = ttyusb_prefixes[i]); i++)
+        if (!strncmp(d->d_name, prefix, strlen(prefix))) return 1;
+    return 0;
 }
 
 // find the TTY-usb device (if any) by using <scandir> to search for
@@ -26,9 +27,12 @@ static int filter(const struct dirent *d) {
 //  - device name.
 // error: panic's if 0 or more than 1 devices.
 char *find_ttyusb(void) {
-    // use <alphasort> in <scandir>
-    // return a malloc'd name so doesn't corrupt.
-    unimplemented();
+    // TODO: "return a malloc'd name so doesn't corrupt"
+    struct dirent **dirents;
+    int nfiles = scandir("/dev", &dirents, filter, alphasort);
+    if (nfiles == -1) perror("find_ttyusb: scandir failed");
+    if (nfiles != 1) panic("Found dodgy number of dirent matches: %d\n", nfiles);
+    return dirents[0]->d_name;
 }
 
 // return the most recently mounted ttyusb (the one
