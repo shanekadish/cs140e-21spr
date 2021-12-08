@@ -16,7 +16,7 @@
 // you can fail here. when you do a read and the pi doesn't send data quickly enough.
 void simple_boot(int fd, const uint8_t *buf, unsigned n) { 
     // if you want to trace PUT/GET set
-    //  trace_p = 1;
+    trace_p = 1;
 
     if(pi_roundup(n,4) % 4 != 0)
         panic("boot code size (%d bytes) is not a multiple of 4!\n", n);
@@ -45,16 +45,26 @@ void simple_boot(int fd, const uint8_t *buf, unsigned n) {
     } 
 
     // 1. reply to the GET_PROG_INFO
-    unimplemented();
+    trace_put32(fd, PUT_PROG_INFO);
+    trace_put32(fd, ARMBASE);
+    trace_put32(fd, n);
+    trace_put32(fd, crc32(buf, n));
 
     // 2. drain any extra GET_PROG_INFOS
-    unimplemented();
+    while((op = get_op(fd)) == GET_PROG_INFO)
+        output("draining spurious GET_PROG_INFO, got <%x>: discarding.\n", op);
 
     // 3. check that we received a GET_CODE
-    unimplemented();
+    assert(op == GET_CODE);
+    output("Got <%x> (GET_CODE)\n", op);
+    assert((op = get_op(fd)) == crc32(buf, n));
+    output("CRC from pi (%x) matches CRC from unix (%x), yay!\n", op, crc32(buf, n));
 
     // 4. handle it: send a PUT_CODE + the code.
-    unimplemented();
+    trace_put32(fd, PUT_CODE);
+    output("Sending program code to pi...\n");
+    for (int i = 0; i < n; i++)
+        put_uint8(fd, buf[i]);
 
     // 5. Wait for BOOT_SUCCESS
     ck_eq32(fd, "BOOT_SUCCESS mismatch", BOOT_SUCCESS, get_op(fd));
