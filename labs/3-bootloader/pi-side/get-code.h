@@ -9,6 +9,8 @@
 #ifndef __GETCODE_H__
 #define __GETCODE_H__
 
+#define REAL_BOOT_START 0x00200000 // found via objdump on bootloader.elf
+
 /*****************************************************************
  * You do not need to modify this first chunk of code.
  */
@@ -122,7 +124,7 @@ static inline long get_code(void) {
     // 3. If the binary will collide with us, abort. 
     //    you can assume that code must be below where the booloader code
     //    gap starts.
-    if (addr != ARMBASE) die(addr);
+    if (addr + nbytes >= REAL_BOOT_START) die(nbytes);
 
     // 4. send [GET_CODE, cksum] back.
     boot_put32(GET_CODE);
