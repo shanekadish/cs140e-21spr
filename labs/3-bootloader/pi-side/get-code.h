@@ -96,7 +96,6 @@ static void wait_for_data(unsigned usec_timeout) {
 static inline long get_code(void) {
     // 1. keep sending GET_PROG_INFO every 300ms until 
     // there is data.
-    boot_putk("shane-boot: Sending GET_PROG_INFO to unix...\n");
     wait_for_data(300 * 1000);
 
     /****************************************************************
@@ -109,28 +108,43 @@ static inline long get_code(void) {
 
     // 2. expect: [PUT_PROG_INFO, addr, nbytes, cksum] 
     //    we echo cksum back in step 4 to help debugging.
-    op     = boot_get32();
-    addr   = boot_get32();
-    nbytes = boot_get32();
-    crc    = boot_get32();
+    if ((op     = boot_get32()) != PUT_PROG_INFO) die(op);
+    if ((addr   = boot_get32()) !=       ARMBASE) die(addr);
+    if ((nbytes = boot_get32()) ==             0) die(nbytes);
+    if ((crc    = boot_get32()) ==             0) die(crc);
 
-    boot_putk("shane-boot: Received PUT_PROG_INFO, ARMBASE, nbytes, crc unix\n");
+    boot_putk("shane-boot: Received PUT_PROG_INFO, ARMBASE, nbytes, crc from unix\n");
 
     // 3. If the binary will collide with us, abort. 
     //    you can assume that code must be below where the booloader code
     //    gap starts.
-
-
+    if (addr != ARMBASE) die(addr);
 
     // 4. send [GET_CODE, cksum] back.
-
+    boot_put32(GET_CODE);
+    boot_put32(crc);
 
     // 5. expect: [PUT_CODE, <code>]
     //  read each sent byte and write it starting at 
     //  <addr> using PUT8
+    if ((op = boot_get32()) != PUT_CODE) die(op);
+    for (int i = 0; i < nbytes; i++)
+        PUT8(addr + i, boot_get8());
+    // int i = 0;
+    // do {
+    //     PUT8(addr + i, boot_get8());
+    //     i++;
+    // } while (!has_data_timeout(300 * 1000));
 
+    boot_putk("shane-boot: Finished writing code to addr\n");
 
     // 6. verify the cksum of the copied code.
+    if (crc != crc32((const void *) addr, nbytes)) {
+        boot_putk("shane-boot: pi-side crc does not match\n");
+        die(crc);
+    } else {
+        boot_putk("shane-boot: pi-side crc matches unix, yay!\n");
+    }
 
     // 7. send back a BOOT_SUCCESS!
     boot_putk("shane-boot: success: Received the program!\n");
