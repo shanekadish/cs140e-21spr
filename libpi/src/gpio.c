@@ -33,6 +33,7 @@ typedef uint32_t word_t;
  * TODO: How to make sense of the fact that we're on an arch with only a subset of these GPIO pins?
  */
 static unsigned int get_gpio_fsel_paddr(unsigned int pin) {
+    assert(pin >= 0 && pin <= 50);
     return gpio_fsel0 + ((pin / 10) * sizeof(word_t));
 }
 
@@ -90,4 +91,14 @@ void gpio_set_input(unsigned int pin) {
 // return the value of <pin>
 int gpio_read(unsigned int pin) {
     return (GET32(gpio_lev0) & (1 << pin)) >> pin;
+}
+
+void gpio_set_function(unsigned int pin, gpio_func_t function) {
+    assert(function >= GPIO_FUNC_INPUT && function <= GPIO_FUNC_ALT3);
+    uint32_t fsel_paddr = get_gpio_fsel_paddr(pin);
+    uint32_t old_value = GET32(fsel_paddr);
+    uint32_t bits_to_clear = 0b111 << ((pin % 10) * 3);
+    uint32_t bits_to_set = function << ((pin % 10) * 3);
+    uint32_t new_value = (old_value & ~bits_to_clear) | bits_to_set;
+    PUT32(fsel_paddr, new_value);
 }
