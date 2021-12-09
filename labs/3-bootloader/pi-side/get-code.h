@@ -130,12 +130,6 @@ static inline long get_code(void) {
     if ((op = boot_get32()) != PUT_CODE) die(op);
     for (int i = 0; i < nbytes; i++)
         PUT8(addr + i, boot_get8());
-    // int i = 0;
-    // do {
-    //     PUT8(addr + i, boot_get8());
-    //     i++;
-    // } while (!has_data_timeout(300 * 1000));
-
     boot_putk("shane-boot: Finished writing code to addr\n");
 
     // 6. verify the cksum of the copied code.
