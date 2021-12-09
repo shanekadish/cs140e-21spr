@@ -93,6 +93,10 @@ static void wait_for_data(unsigned usec_timeout) {
 // IMPLEMENT this routine.
 //
 // Simple bootloader: put all of your code here.
+// Note: Do not use `boot_putk()` if you are expecting to receive data or else
+//       we'll overwrite the received message in the 8-byte UART buffer.
+//       i.e. never call `boot_putk` before a `boot_get` invocation.
+//       Ask me how I know hehe...
 static inline long get_code(void) {
     // 1. keep sending GET_PROG_INFO every 300ms until 
     // there is data.
