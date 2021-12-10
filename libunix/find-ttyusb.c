@@ -31,8 +31,9 @@ char *find_ttyusb(void) {
     struct dirent **dirents;
     int nfiles = scandir("/dev", &dirents, filter, alphasort);
     if (nfiles == -1) perror("find_ttyusb: scandir failed");
-    if (nfiles != 1) panic("Found dodgy number of dirent matches: %d\n", nfiles);
-    return dirents[0]->d_name;
+    char *path = (char *) malloc(strlen("/dev/") + strlen(dirents[0]->d_name));
+    snprintf(path, strlen("/dev/") + strlen(dirents[0]->d_name) + 1, "%s%s", "/dev/", dirents[0]->d_name);
+    return path;
 }
 
 // return the most recently mounted ttyusb (the one
@@ -43,7 +44,9 @@ char *find_ttyusb_last(void) {
     struct dirent **dirents;
     int nfiles = scandir("/dev", &dirents, filter, NULL);
     if (nfiles == -1) perror("find_ttyusb: scandir failed");
-    return dirents[nfiles - 1]->d_name;
+    char *path = (char *) malloc(strlen("/dev/") + strlen(dirents[nfiles - 1]->d_name));
+    snprintf(path, strlen("/dev/") + strlen(dirents[nfiles - 1]->d_name) + 1, "%s%s", "/dev/", dirents[nfiles - 1]->d_name);
+    return path;
 }
 
 // return the oldest mounted ttyusb (the one mounted
