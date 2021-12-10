@@ -14,12 +14,84 @@
 //
 #include "rpi.h"
 
+// Broadcomm doc: "If the enable bits are clear you will have no access to a
+//                 peripheral. You can not even read or write the registers!"
+#define AUX_ENABLE_REG  0x20215004 // used to enable/disable uart
+
+// mini uart I/O
+#define AUX_MU_IO_REG   0x20215040 // used to read/write the uart FIFOs
+
+// mini uart interrupt enable
+#define AUX_MU_IER_REG  0x20215044 // used to enable/disable uart interrupts
+
+// mini uart interrupt identify (also has FIFO enable/disable bits)
+#define AUX_MU_IIR_REG  0x20215048 // used to enable/disable uart FIFOs
+
+// mini uart line control
+#define AUX_MU_LCR_REG  0x2021504C // used to control line data format (i.e. 7/8-bit mode)
+
+// mini uart line status
+#define AUX_MU_LSR_REG  0x20215054 // read to see status of transmit/receive FIFOs (e.g. idle, empty, ready)
+
+// mini uart extra control
+#define AUX_MU_CNTL_REG 0x20215060 // used to enable/disable transmitter/receiver
+
+// mini uart extra status
+#define AUX_MU_STAT_REG 0x20215064 // used to check if transmitter FIFO has space available
+
+// mini uart baudrate
+#define AUX_MU_BAUD     0x20215068 // used to set baudrate? why does engler say not to use in broadcomm annots?
+
+static void disable_uart(void) {
+    // clear bit 0 to disable uart
+    PUT32(AUX_ENABLE_REG, GET32(AUX_ENABLE_REG) & 0xFFFFFFFE); // 0xE = 0b1110
+}
+
+static void enable_uart(void) {
+    // set bit 0 to enable uart
+    PUT32(AUX_ENABLE_REG, GET32(AUX_ENABLE_REG) | 0x00000001); // 0x1 = 0b0001
+}
+
+static void disable_uart_interrupts(void) {
+    // clear bit 0 to disable transmit interrupts
+    PUT32(AUX_MU_IER_REG, GET32(AUX_MU_IER_REG) & 0xFFFFFFFE); // 0xE = 0b1110
+    // clear bit 1 to disable receive interrupts
+    PUT32(AUX_MU_IER_REG, GET32(AUX_MU_IER_REG) & 0xFFFFFFFD); // 0xD = 0b1101
+}
+
+static void clear_uart_recv_fifo(void) {
+    // set bit 1 to clear the receive FIFO
+    PUT32(AUX_MU_IIR_REG, GET32(AUX_MU_IER_REG) | 0x00000002); // 0x2 = 0b0010
+}
+
+static void clear_uart_xmit_fifo(void) {
+    // set bit 2 to clear the transmit FIFO
+    PUT32(AUX_MU_IIR_REG, GET32(AUX_MU_IER_REG) | 0x00000004); // 0x4 = 0b0100
+}
+
 // called first to setup uart to 8n1 115200  baud,
 // no interrupts.
 //  - you will need memory barriers, use <dev_barrier()>
 //
 //  later: should add an init that takes a baud rate.
 void uart_init(void) {
+    // Engler: "You'll want to explicitly disable the mini-UART at the beginning
+    //          to ensure it works if uart_init(void) is called multiple times
+    //          (as can happen when we use a bootloader, or reboot())."
+    disable_uart();
+
+    // Engler: " Disable interrupts"
+    disable_uart_interrupts();
+
+    // Broadcomm doc: "GPIO pins should be set up first the before enabling the UART"
+
+
+    // Engler: "you will often want to fully enable the mini-UART's ability to
+    //          transmit and receive as the very last step after configuring it.
+    //          Otherwise it will be on in whatever initial state it booted up
+    //          in, possibly interacting with the world before you can specify
+    //          how it should do so."
+    enable_uart();
 }
 
 // 1 = at least one byte on rx queue, 0 otherwise
