@@ -46,9 +46,10 @@ static int filter(const struct dirent *d) {
 
 char *find_ttyusb(void) {
     struct dirent **dirents;
-    int nfiles = scandir("/dev", &dirents, filter, alphasort);
+    int nfiles = scandir("/dev", &dirents, filter, NULL);
     if (nfiles == -1) perror("find_ttyusb: scandir failed");
-    if (nfiles == 0 || nfiles > 1) fprintf(stderr, "Found dodgy number of dirent matches: %d\n", nfiles);
+    // if (nfiles == 0 || nfiles > 1) fprintf(stderr, "Found dodgy number of dirent matches: %d\n", nfiles);
+    for (int i = 0; i < nfiles; i++) printf("%s\n", dirents[i]->d_name);
     return dirents[0]->d_name;
 }
 

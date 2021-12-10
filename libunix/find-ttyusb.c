@@ -38,13 +38,18 @@ char *find_ttyusb(void) {
 // return the most recently mounted ttyusb (the one
 // mounted last).  use the modification time 
 // returned by state.
+// TODO: Check that default order is modification time, else define `compar` function
 char *find_ttyusb_last(void) {
-    unimplemented();
+    struct dirent **dirents;
+    int nfiles = scandir("/dev", &dirents, filter, NULL);
+    if (nfiles == -1) perror("find_ttyusb: scandir failed");
+    return dirents[nfiles - 1]->d_name;
 }
 
 // return the oldest mounted ttyusb (the one mounted
 // "first") --- use the modification returned by
 // stat()
+// TODO: Check that default order is modification time, else define `compar` function
 char *find_ttyusb_first(void) {
-    unimplemented();
+    return find_ttyusb();
 }
