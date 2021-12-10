@@ -75,6 +75,19 @@ static void clear_uart_xmit_fifo(void) {
 //
 //  later: should add an init that takes a baud rate.
 void uart_init(void) {
+    /*
+     * Steps (I think):
+     * 1. disable uart
+     * 2. setup tx/rx gpio pins (Broadcomm: "GPIO pins should be set up first the before enabling the UART")
+     * 3. enable uart (so we can touch uart regs)
+     * 4. disable uart tx/rx (so we don't send garbage)
+     * 5. disable uart interrupts
+     * 6. clear tx/rx FIFO queues
+     * 7. configure LCR for 8-bit mode
+     * 8. configure baudrate
+     * 9. enable uart tx/rx
+     */
+
     // Engler: "You'll want to explicitly disable the mini-UART at the beginning
     //          to ensure it works if uart_init(void) is called multiple times
     //          (as can happen when we use a bootloader, or reboot())."
