@@ -126,6 +126,7 @@ int uart_can_putc(void) {
 // put one byte on the tx qqueue, if needed, blocks
 // until TX has space.
 void uart_putc(unsigned c) {
+    PUT32(AUX_MU_IO_REG, c);
 }
 
 // simple wrapper routines useful later.

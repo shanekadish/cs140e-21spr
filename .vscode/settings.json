@@ -1,6 +1,8 @@
 {
     "files.associations": {
-        "rpi.h": "c"
+        "rpi.h": "c",
+        "compare": "c",
+        "type_traits": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }
