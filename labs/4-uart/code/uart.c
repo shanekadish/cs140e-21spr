@@ -13,6 +13,7 @@
 //
 //
 #include "rpi.h"
+#include <stdbool.h>
 
 // Broadcomm doc: "If the enable bits are clear you will have no access to a
 //                 peripheral. You can not even read or write the registers!"
@@ -41,6 +42,22 @@
 
 // mini uart baudrate
 #define AUX_MU_BAUD     0x20215068 // used to set baudrate? why does engler say not to use in broadcomm annots?
+
+typedef uint32_t word_t;
+
+// TODO: Use struct with bitfields instead, speak to Adrian for info
+
+static inline word_t set_bit(word_t word, uint8_t bit) {
+    return word | (1U << bit);
+}
+
+static inline word_t clear_bit(word_t word, uint8_t bit) {
+    return word & ~(1U << bit);
+}
+
+static inline bool is_bit_set(word_t word, uint8_t bit) {
+    return word & (1U << bit);
+}
 
 static void disable_uart(void) {
     // clear bit 0 to disable uart
@@ -158,7 +175,7 @@ void uart_init(void) {
 // 1 = at least one byte on rx queue, 0 otherwise
 static int uart_can_getc(void) {
     // read bit 0 to check if rx FIFO has a byte
-    return (GET32(AUX_MU_LSR_REG) & 0x1);
+    return is_bit_set(GET32(AUX_MU_LSR_REG), 0);
 }
 
 // returns one byte from the rx queue, if needed
@@ -172,7 +189,7 @@ int uart_getc(void) {
 // 1 = space to put at least one byte, 0 otherwise.
 int uart_can_putc(void) {
     // read bit 5 to check if tx FIFO can accept a byte
-    return (GET32(AUX_MU_LSR_REG) & 0x20) >> 5; // 0x20 = 0b00100000
+    return is_bit_set(GET32(AUX_MU_LSR_REG), 5) ? 1 : 0;
 }
 
 // put one byte on the tx qqueue, if needed, blocks
@@ -199,7 +216,7 @@ int uart_getc_async(void) {
 // 1 = tx queue empty, 0 = not empty.
 int uart_tx_is_empty(void) {
     // read bit 6 to check if tx FIFO is empty and idle
-    return (GET32(AUX_MU_LSR_REG) & 0x40) >> 6; // 0x40 = 0b01000000
+    return is_bit_set(GET32(AUX_MU_LSR_REG), 6) ? 1 : 0;
 }
 
 void uart_flush_tx(void) {
