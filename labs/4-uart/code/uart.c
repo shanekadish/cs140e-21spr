@@ -44,12 +44,32 @@
 
 static void disable_uart(void) {
     // clear bit 0 to disable uart
-    PUT32(AUX_ENABLE_REG, GET32(AUX_ENABLE_REG) & 0xFFFFFFFE); // 0xE = 0b1110
+    PUT32(AUX_ENABLE_REG, GET32(AUX_ENABLE_REG) & 0xFFFFFFFE);   // 0xE = 0b1110
 }
 
 static void enable_uart(void) {
     // set bit 0 to enable uart
-    PUT32(AUX_ENABLE_REG, GET32(AUX_ENABLE_REG) | 0x00000001); // 0x1 = 0b0001
+    PUT32(AUX_ENABLE_REG, GET32(AUX_ENABLE_REG) | 0x00000001);   // 0x1 = 0b0001
+}
+
+static void disable_uart_rx(void) {
+    // clear bit 0 to disable uart rx
+    PUT32(AUX_MU_CNTL_REG, GET32(AUX_MU_CNTL_REG) & 0xFFFFFFFE); // 0xE = 0b1110
+}
+
+static void disable_uart_tx(void) {
+    // clear bit 1 to disable uart tx
+    PUT32(AUX_MU_CNTL_REG, GET32(AUX_MU_CNTL_REG) & 0xFFFFFFFD); // 0xD = 0b1101
+}
+
+static void enable_uart_rx(void) {
+    // set bit 0 to enable uart rx
+    PUT32(AUX_MU_CNTL_REG, GET32(AUX_MU_CNTL_REG) | 0x00000001); // 0x1 = 0b0001
+}
+
+static void enable_uart_tx(void) {
+    // set bit 1 to enable uart tx
+    PUT32(AUX_MU_CNTL_REG, GET32(AUX_MU_CNTL_REG) | 0x00000002); // 0x2 = 0b0010
 }
 
 static void disable_uart_interrupts(void) {
@@ -59,14 +79,24 @@ static void disable_uart_interrupts(void) {
     PUT32(AUX_MU_IER_REG, GET32(AUX_MU_IER_REG) & 0xFFFFFFFD); // 0xD = 0b1101
 }
 
-static void clear_uart_recv_fifo(void) {
+static void clear_uart_rx_fifo(void) {
     // set bit 1 to clear the receive FIFO
     PUT32(AUX_MU_IIR_REG, GET32(AUX_MU_IER_REG) | 0x00000002); // 0x2 = 0b0010
 }
 
-static void clear_uart_xmit_fifo(void) {
+static void clear_uart_tx_fifo(void) {
     // set bit 2 to clear the transmit FIFO
     PUT32(AUX_MU_IIR_REG, GET32(AUX_MU_IER_REG) | 0x00000004); // 0x4 = 0b0100
+}
+
+static void set_uart_8bit_mode(void) {
+    // set bits 0-1 to enable 8-bit mode
+    PUT32(AUX_MU_LCR_REG, GET32(AUX_MU_LCR_REG) | 0x00000003); // 0x3 = 0b0011
+}
+
+static void set_uart_baudrate(void) {
+    // set bits 0-15 to configure baudrate
+    PUT32(AUX_MU_BAUD, 115200);
 }
 
 // called first to setup uart to 8n1 115200  baud,
@@ -93,18 +123,36 @@ void uart_init(void) {
     //          (as can happen when we use a bootloader, or reboot())."
     disable_uart();
 
+    // Broadcomm doc: "GPIO pins should be set up first the before enabling the UART"
+    // TODO: setup tx/rx gpio pins
+    // Uhh, is this right? What does 'pull low' mean?
+    // gpio_set_function(14, GPIO_FUNC_ALT0);
+    // gpio_set_function(15, GPIO_FUNC_ALT0);
+
+    enable_uart();
+
+    disable_uart_tx();
+    disable_uart_rx();
+
     // Engler: " Disable interrupts"
     disable_uart_interrupts();
 
-    // Broadcomm doc: "GPIO pins should be set up first the before enabling the UART"
+    clear_uart_tx_fifo();
+    clear_uart_rx_fifo();
 
+    set_uart_8bit_mode();
+
+    // FIXME: This triggers BOOT_SUCCESS mismatch atm :-(
+    // set_uart_baudrate();
 
     // Engler: "you will often want to fully enable the mini-UART's ability to
     //          transmit and receive as the very last step after configuring it.
     //          Otherwise it will be on in whatever initial state it booted up
     //          in, possibly interacting with the world before you can specify
     //          how it should do so."
-    enable_uart();
+    // TODO: Should we be enabling both tx and rx here?
+    enable_uart_tx();
+    enable_uart_rx();
 }
 
 // 1 = at least one byte on rx queue, 0 otherwise

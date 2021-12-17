@@ -1,7 +1,7 @@
 TARGET = libpi-fake.a
 
 # define where gpio.c is, and the programs you want to run.
-GPIO := ../libpi/src/gpio.c ../libpi/src/gpio-int.c 
+GPIO := ../libpi/src/gpio.c # ../libpi/src/gpio-int.c
 
 
 # if you want to compile everything in a directory, do something like this.

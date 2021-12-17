@@ -6,7 +6,6 @@ static void my_putk(char *s) {
 }
 
 void notmain(void) {
-    my_putk("S\n");
     // hack to make sure aux is off.
     dev_barrier();
     PUT32(0x20215004, 0);
