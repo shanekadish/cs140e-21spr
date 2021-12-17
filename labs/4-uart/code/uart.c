@@ -157,23 +157,28 @@ void uart_init(void) {
 
 // 1 = at least one byte on rx queue, 0 otherwise
 static int uart_can_getc(void) {
-    return 0;
+    // read bit 0 to check if rx FIFO has a byte
+    return (GET32(AUX_MU_LSR_REG) & 0x1);
 }
 
 // returns one byte from the rx queue, if needed
 // blocks until there is one.
 int uart_getc(void) {
-	return 0;
+    while (!uart_can_getc());
+    // read bits 0-7
+    return GET32(AUX_MU_IO_REG) & 0x000000FF; // 0xFF = 0b11111111
 }
 
 // 1 = space to put at least one byte, 0 otherwise.
 int uart_can_putc(void) {
-    return 0;
+    // read bit 5 to check if tx FIFO can accept a byte
+    return (GET32(AUX_MU_LSR_REG) & 0x20) >> 5; // 0x20 = 0b00100000
 }
 
 // put one byte on the tx qqueue, if needed, blocks
 // until TX has space.
 void uart_putc(unsigned c) {
+    while (!uart_can_putc());
     PUT32(AUX_MU_IO_REG, c);
 }
 
@@ -184,7 +189,6 @@ int uart_has_data(void) {
     return uart_can_getc();
 }
 
-
 // return -1 if no data, otherwise the byte.
 int uart_getc_async(void) { 
     if(!uart_has_data())
@@ -194,7 +198,8 @@ int uart_getc_async(void) {
 
 // 1 = tx queue empty, 0 = not empty.
 int uart_tx_is_empty(void) {
-    unimplemented();
+    // read bit 6 to check if tx FIFO is empty and idle
+    return (GET32(AUX_MU_LSR_REG) & 0x40) >> 6; // 0x40 = 0b01000000
 }
 
 void uart_flush_tx(void) {
