@@ -113,7 +113,13 @@ static void set_uart_8bit_mode(void) {
 
 static void set_uart_baudrate(void) {
     // set bits 0-15 to configure baudrate
-    PUT32(AUX_MU_BAUD, 115200);
+    // See config.txt, the clock speed is set to 250Mhz, plugging that in to the formula gives us this value
+    PUT32(AUX_MU_BAUD, 270);
+}
+
+static void my_putk(char *s) {
+    for(; *s; s++)
+        uart_putc(*s);
 }
 
 // called first to setup uart to 8n1 115200  baud,
@@ -143,8 +149,15 @@ void uart_init(void) {
     // Broadcomm doc: "GPIO pins should be set up first the before enabling the UART"
     // TODO: setup tx/rx gpio pins
     // Uhh, is this right? What does 'pull low' mean?
-    // gpio_set_function(14, GPIO_FUNC_ALT0);
-    // gpio_set_function(15, GPIO_FUNC_ALT0);
+    gpio_set_function(GPIO_TX, GPIO_FUNC_ALT5);
+    gpio_set_function(GPIO_RX, GPIO_FUNC_ALT5);
+
+    gpio_clear_pud();
+
+    gpio_set_pud_clk0(GPIO_TX);
+    gpio_set_pud_clk0(GPIO_RX);
+
+    gpio_clear_pud_clk0();
 
     enable_uart();
 
@@ -159,8 +172,7 @@ void uart_init(void) {
 
     set_uart_8bit_mode();
 
-    // FIXME: This triggers BOOT_SUCCESS mismatch atm :-(
-    // set_uart_baudrate();
+    set_uart_baudrate();
 
     // Engler: "you will often want to fully enable the mini-UART's ability to
     //          transmit and receive as the very last step after configuring it.
@@ -170,6 +182,8 @@ void uart_init(void) {
     // TODO: Should we be enabling both tx and rx here?
     enable_uart_tx();
     enable_uart_rx();
+
+    my_putk("uart init success\n");
 }
 
 // 1 = at least one byte on rx queue, 0 otherwise

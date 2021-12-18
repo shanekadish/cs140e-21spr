@@ -53,6 +53,10 @@ void gpio_pud_off(unsigned pin);
 
 int gpio_get_pud(unsigned pin);
 
+void gpio_clear_pud(void);
+void gpio_set_pud_clk0(unsigned int pin);
+void gpio_clear_pud_clk0(void);
+
 /*****************************************************************
  * use the following to configure interrupts on pins.
  */

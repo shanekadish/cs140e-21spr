@@ -12,10 +12,12 @@
 // see broadcomm documents for magic addresses.
 #define GPIO_BASE_PADDR 0x20200000
 
-static const unsigned int gpio_fsel0 = (GPIO_BASE_PADDR);
-static const unsigned int gpio_set0  = (GPIO_BASE_PADDR + 0x1C);
-static const unsigned int gpio_clr0  = (GPIO_BASE_PADDR + 0x28);
-static const unsigned int gpio_lev0  = (GPIO_BASE_PADDR + 0x34);
+static const unsigned int gpio_fsel0      = (GPIO_BASE_PADDR);
+static const unsigned int gpio_set0       = (GPIO_BASE_PADDR + 0x1C);
+static const unsigned int gpio_clr0       = (GPIO_BASE_PADDR + 0x28);
+static const unsigned int gpio_lev0       = (GPIO_BASE_PADDR + 0x34);
+static const unsigned int gpio_pud        = (GPIO_BASE_PADDR + 0x94);
+static const unsigned int gpio_pud_clk0   = (GPIO_BASE_PADDR + 0x98);
 
 typedef uint32_t word_t;
 
@@ -101,4 +103,25 @@ void gpio_set_function(unsigned int pin, gpio_func_t function) {
     uint32_t bits_to_set = function << ((pin % 10) * 3);
     uint32_t new_value = (old_value & ~bits_to_clear) | bits_to_set;
     PUT32(fsel_paddr, new_value);
+}
+
+void gpio_clear_pud(void) {
+    PUT32(gpio_pud, GET32(gpio_pud) & 0xFFFFFFFC); // clear bits 0-1
+    // "Wait 150 cycles – this provides the required set-up time for the control signal"
+    uint8_t cycles = 150;
+    while (cycles--) asm volatile("nop");
+}
+
+void gpio_set_pud_clk0(unsigned int pin) {
+    PUT32(gpio_pud_clk0, GET32(gpio_pud_clk0) | 1U << pin);
+    // "Wait 150 cycles – this provides the required set-up time for the control signal"
+    uint8_t cycles = 150;
+    while (cycles--) asm volatile("nop");
+}
+
+void gpio_clear_pud_clk0(void) {
+    PUT32(gpio_pud_clk0, 0);
+    // "Wait 150 cycles – this provides the required set-up time for the control signal"
+    uint8_t cycles = 150;
+    while (cycles--) asm volatile("nop");
 }
