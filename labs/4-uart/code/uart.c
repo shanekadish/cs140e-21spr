@@ -152,13 +152,6 @@ void uart_init(void) {
     gpio_set_function(GPIO_TX, GPIO_FUNC_ALT5);
     gpio_set_function(GPIO_RX, GPIO_FUNC_ALT5);
 
-    gpio_clear_pud();
-
-    gpio_set_pud_clk0(GPIO_TX);
-    gpio_set_pud_clk0(GPIO_RX);
-
-    gpio_clear_pud_clk0();
-
     enable_uart();
 
     disable_uart_tx();

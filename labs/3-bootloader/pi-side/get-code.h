@@ -119,7 +119,7 @@ static inline long get_code(void) {
     if ((nbytes = boot_get32()) ==             0) die(nbytes);
     if ((crc    = boot_get32()) ==             0) die(crc);
 
-    boot_putk("shane-boot: uart init must have succeeded\n");
+    boot_putk("shane-boot: UART init must have succeeded\n");
     boot_putk("shane-boot: Received PUT_PROG_INFO, ARMBASE, nbytes, crc from unix\n");
 
     // 3. If the binary will collide with us, abort. 
