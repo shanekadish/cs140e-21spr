@@ -20,6 +20,9 @@ typedef struct {
 #define sw_uart_init(_tx,_rx,_baud) \
     (sw_uart_t){ .tx = _tx, .rx = _rx, .baud = _baud, .usec_per_bit = (1000*1000)/_baud }
 
+// actually init the sw uart
+void sw_uart_init_real(sw_uart_t *uart);
+
 // output a single character: semantically identical to uart_putc.
 void sw_uart_putc(sw_uart_t *uart, unsigned char c);
 // output a null-terminated string.
