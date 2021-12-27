@@ -38,7 +38,10 @@ scope(unsigned pin, log_ent_t *l, unsigned n_max, unsigned max_cycles) {
 
         // write this code first: record sample when the pin
         // changes.  then start tuning the whole routine.
-        unimplemented();
+        v1 = v0 = gpio_read(pin);
+        while((v1 = gpio_read(pin)) == v0);
+        t = cycle_cnt_read();
+        l[n++] = (log_ent_t) { .v = v1, .ncycles = t - start};
 
 
         // exit when we have run too long.
@@ -63,7 +66,7 @@ void notmain(void) {
     log_ent_t log[MAXSAMPLES];
 
     // just to illustrate.  remove this.
-    sample_ex(log, 10, CYCLE_PER_FLIP);
+    // sample_ex(log, 10, CYCLE_PER_FLIP);
 
     // run 4 times before rebooting: makes things easier.
     // you can get rid of this.

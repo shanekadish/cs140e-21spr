@@ -1,6 +1,6 @@
 NAME := scope
 # change this to yours
-TTY := /dev/ttyUSB0
+TTY := /dev/cu.usbserial-0001
 
 # check that your path is defined.
 ifndef CS140E_2021_PATH
