@@ -1,4 +1,4 @@
-USE_LOCAL_KMALLOC = ./kmalloc.c
+# USE_LOCAL_KMALLOC = ./kmalloc.c
 
 # the tests you want to run: can list them out.
 TEST_SRC = $(sort $(wildcard ./[0-9]*-test*.c))
