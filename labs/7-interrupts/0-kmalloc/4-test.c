@@ -30,7 +30,7 @@ static void do_allocs(void) {
     for(int i = 32; i < 1024 * 1024; i *= 2) {
         unsigned n = rpi_rand16() % 1024*16;
         void *p = kmalloc_aligned(n,i);
-        trace("kmalloc_aligned(1,%d) =%x\n", i, p);
+        trace("kmalloc_aligned(%d,%d)=%x\n", n, i, p);
 
         // check alignment.
         assert(is_aligned((unsigned)p,i));

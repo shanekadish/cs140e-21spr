@@ -1,10 +1,15 @@
 #include "rpi.h"
 
 // of all the code/data in a pi binary file.
+// TODO: Why is this a char?
+// TODO: Why does this value appear to change? E.g. try printing it out in kfree_all()
 extern char __heap_start__;
 
 // track if initialized.
 static int init_p;
+
+static unsigned heap_ptr = 0;
+static unsigned real_heap_start = (1024 * 1024);
 
 // this is the minimum alignment: must always
 // roundup to at least sizeof(union align)
@@ -48,8 +53,14 @@ static inline unsigned roundup(unsigned x, unsigned n) {
  */
 void *kmalloc(unsigned nbytes) {
     assert(nbytes);
+    // TODO: 6-test-err.c makes me think this is the mem limit, not sure though
+    assert(nbytes <= 1024 * 1024 * 8);
     demand(init_p, calling before initialized);
-    unimplemented();
+    assert(is_aligned(heap_ptr, 4));
+    unsigned old_heap_ptr = heap_ptr;
+    heap_ptr = roundup(heap_ptr + nbytes, 4);
+    memset((void *) old_heap_ptr, 0, heap_ptr - old_heap_ptr);
+    return (void *) old_heap_ptr;
 }
 
 /*
@@ -60,10 +71,14 @@ void *kmalloc_aligned(unsigned nbytes, unsigned alignment) {
     assert(nbytes);
     demand(init_p, calling before initialized);
     demand(is_pow2(alignment), assuming power of two);
-
     if(alignment <= 4)
         return kmalloc(nbytes);
-    unimplemented();
+    // TODO: Is there another way to do this without leaking memory?
+    heap_ptr = roundup(heap_ptr, alignment);
+    unsigned old_heap_ptr = heap_ptr;
+    heap_ptr = roundup(heap_ptr + nbytes, alignment);
+    memset((void *) old_heap_ptr, 0, heap_ptr - old_heap_ptr);
+    return (void *) old_heap_ptr;
 }
 
 /*
@@ -78,7 +93,8 @@ void kmalloc_init(void) {
     if(init_p)
         return;
     init_p = 1;
-    unimplemented();
+    heap_ptr = roundup(__heap_start__, 4);
+    printk("heap ptr: %p\n", heap_ptr);
 }
 
 /*
@@ -88,7 +104,9 @@ void kmalloc_init(void) {
 void kmalloc_init_set_start(unsigned _addr) {
     demand(!init_p, already initialized);
     init_p = 1;
-    unimplemented();
+    assert(_addr >= __heap_start__);
+    heap_ptr = roundup(_addr, 4);
+    printk("heap ptr: %p\n", heap_ptr);
 }
 
 
@@ -97,7 +115,8 @@ void kmalloc_init_set_start(unsigned _addr) {
  * pointer back to the beginning.
  */
 void kfree_all(void) {
-    unimplemented();
+    // TODO: Figure out why we can't use __heap_start__ here (it seems to be 0?)
+    heap_ptr = real_heap_start;
 }
 
 // return pointer to the first free byte.
@@ -106,5 +125,5 @@ void kfree_all(void) {
 //    assert(<addr> < kmalloc_heap_ptr());
 // 
 void *kmalloc_heap_ptr(void) {
-    unimplemented();
+    return (void *) heap_ptr;
 }

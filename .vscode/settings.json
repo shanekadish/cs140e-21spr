@@ -2,7 +2,10 @@
     "files.associations": {
         "rpi.h": "c",
         "compare": "c",
-        "type_traits": "c"
+        "type_traits": "c",
+        "__bit_reference": "c",
+        "__string": "c",
+        "cstring": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }
